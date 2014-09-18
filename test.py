@@ -5,26 +5,32 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 
-import coreset
+import grid
+
+D = 5
 
 def main():
     # Create a random dataset
     rng = np.random.RandomState(1)
-    X = np.sort(5 * rng.rand(1024 * 16, 1), axis=0)
-    y = np.sin(X).ravel()
-    y[::16] += 3 * (0.5 - rng.rand(1024))
+    x = np.sort(5 * rng.rand(64 * 4, 1), axis=0)
+    y = np.sin(x).ravel()
+    y[::64] += 3 * (0.5 - rng.rand(4))
 
-    D = 2
-    x_0, y_0, w_0 = coreset.create(X, y, D)
+    data = np.array([x, y]).transpose()
+    size = int(np.log2(data.shape[0])) ** 2
 
-    i = np.arange(y.size)
-    i = np.random.choice(i, x_0.shape[0])
-    x_1, y_1 = X[i], y[i]
+    data, w = grid.sample(data, size)
+    x_1, y_1 = data[:, 0].reshape((size, 1)), data[:, 1].reshape((size, 1))
+
+    i = range(size)
+    i = np.random.choice(i, size)
+    x_2, y_2 = x[i], y[i]
 
     clf_1 = DecisionTreeRegressor(max_depth=D)
+    clf_1.fit(x_1, y_1, sample_weight=w)
+
     clf_2 = DecisionTreeRegressor(max_depth=D)
-    clf_1.fit(x_0, y_0)
-    clf_2.fit(x_1, y_1)
+    clf_2.fit(x_2, y_2)
 
     # Predict
     X_test = np.arange(0.0, 5.0, 0.01)[:, np.newaxis]
@@ -33,9 +39,9 @@ def main():
 
     # Plot the results
     plt.figure()
-    plt.scatter(X, y, c="k", label="data")
-    plt.plot(X_test, y_1, c="g", label="cft1", linewidth=2)
-    plt.plot(X_test, y_2, c="r", label="cft2", linewidth=2)
+    plt.scatter(x, y, c="k", label="data")
+    plt.plot(X_test, y_1, c="g", label="coreset", linewidth=2)
+    plt.plot(X_test, y_2, c="r", label="random", linewidth=2)
     plt.xlabel("data")
     plt.ylabel("target")
     plt.title("Decision Tree Regression")
