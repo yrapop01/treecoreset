@@ -11,4 +11,4 @@ To test type `make` and then run iris.py
 
 Documents:
 
- 1. Yaca.pdf [link](https://github.com/yrapop01/treecoreset/blob/master/yaca.pdf)
+ 1. [Yaca.pdf](https://github.com/yrapop01/treecoreset/blob/master/yaca.pdf)
